@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Game 3: Balloon Popper</title>
+    <style>
+        body { margin: 0; overflow: hidden; background-color: #87CEEB; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; touch-action: none; }
+        canvas { display: block; width: 100vw; height: 100vh; }
+        #ui { position: absolute; top: 10px; left: 0; width: 100%; text-align: center; color: white; pointer-events: none; display: flex; flex-direction: column; align-items: center; }
+        .top-bar { display: flex; justify-content: space-between; width: 90%; max-width: 600px; margin-bottom: 10px; align-items: center; }
+        .hearts { font-size: 24px; color: #ef4444; }
+        #score { font-size: 24px; font-weight: bold; color: #10b981; background: white; padding: 5px 15px; border-radius: 15px; border: 2px solid #10b981;}
+        
+        .word-container { background: white; padding: 10px 20px; border-radius: 20px; border: 4px solid #f59e0b; display: flex; align-items: center; gap: 15px; pointer-events: auto; color: #1e293b; box-shadow: 0 4px 10px rgba(0,0,0,0.2);}
+        h1 { margin: 0; font-size: 28px; }
+        .speaker { font-size: 30px; cursor: pointer; background: #f59e0b; border-radius: 50%; width: 50px; height: 50px; display: flex; justify-content: center; align-items: center; transition: 0.2s; color: white; }
+        .speaker:active { transform: scale(0.9); }
+
+        .message-overlay {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.5);
+            background: rgba(255,255,255,0.95); border: 4px solid #f59e0b; padding: 40px; border-radius: 30px;
+            text-align: center; color: #1e293b; opacity: 0; pointer-events: none;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 100; width: 80%; max-width: 400px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        .message-overlay.show { opacity: 1; transform: translate(-50%, -50%) scale(1); pointer-events: auto; }
+        button { margin-top: 20px; padding: 15px 30px; font-size: 24px; border-radius: 20px; background: #f59e0b; color: white; border: none; cursor: pointer; width: 100%; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div id="ui">
+        <div class="top-bar">
+            <div class="hearts" id="heartsDisplay">❤️❤️❤️</div>
+            <div id="score">Score: 0</div>
+        </div>
+        <div class="word-container">
+            <div class="speaker" onclick="speakWord()">🔊</div>
+            <h1 id="taskTitle">Pop the: <span id="targetWord" style="color:#f59e0b"></span></h1>
+        </div>
+    </div>
+    
+    <div id="startScreen" class="message-overlay show">
+        <h2>Balloon Popper 🎈</h2>
+        <p>You have 3 Hearts. Listen to the word, and pop the correct balloons!</p>
+        <button onclick="startGame()">Play</button>
+    </div>
+
+    <canvas id="gameCanvas"></canvas>
+
+    <script>
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+        
+        function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+        window.addEventListener('resize', resize); resize();
+
+        let bgImg = new Image(); bgImg.src = "bg.jpg";
+
+        let score = 0;
+        let lives = 3;
+        let isPlaying = false;
+        
+        // Load target assets
+        const words = ["bone", "stove", "tape", "shape", "crane", "rope", "plane", "cape", "mane"];
+        const loadedImages = {};
+        words.forEach(w => {
+            loadedImages[w] = new Image();
+            loadedImages[w].src = "../assets/" + w + ".jpg";
+        });
+
+        let targetWord = "";
+        let balloons = [];
+        let particles = [];
+        let spawnTimer = 0;
+        
+        const colors = ["#ef4444", "#3b82f6", "#10b981", "#f59e0b", "#8b5cf6", "#ec4899"];
+
+        function speakWord() {
+            if(!window.speechSynthesis) return;
+            const utterance = new SpeechSynthesisUtterance(targetWord);
+            utterance.lang = 'en-US'; utterance.rate = 0.8;
+            window.speechSynthesis.speak(utterance);
+        }
+
+        let audioCtx = null;
+        function playSound(type) {
+            if(!audioCtx) return;
+            const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            if(type === 'pop') {
+                osc.type = 'sine'; osc.frequency.setValueAtTime(800, audioCtx.currentTime); osc.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.1);
+                gain.gain.setValueAtTime(0.5, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.1);
+            } else if(type === 'wrong') {
+                osc.type = 'sawtooth'; osc.frequency.setValueAtTime(150, audioCtx.currentTime); osc.frequency.exponentialRampToValueAtTime(80, audioCtx.currentTime + 0.3);
+                gain.gain.setValueAtTime(0.5, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.3);
+            }
+        }
+
+        function spawnBalloon() {
+            let isCorrect = Math.random() < 0.35;
+            let wordSpawn = targetWord;
+            if(!isCorrect) {
+                let wrongs = words.filter(w => w !== targetWord);
+                wordSpawn = wrongs[Math.floor(Math.random() * wrongs.length)];
+            }
+            balloons.push({
+                word: wordSpawn,
+                x: Math.random() * (canvas.width - 120) + 60,
+                y: canvas.height + 100,
+                r: 50,
+                color: colors[Math.floor(Math.random() * colors.length)],
+                speed: Math.random() * 1.5 + 1.5,
+                wobble: Math.random() * Math.PI * 2,
+                wobbleSpeed: Math.random() * 0.05 + 0.02
+            });
+        }
+
+        function createExplosion(x, y, color) {
+            for(let i=0; i<30; i++) {
+                particles.push({x:x, y:y, vx:(Math.random()-0.5)*12, vy:(Math.random()-0.5)*12, life:30, color:color});
+            }
+        }
+
+        function pickNewTarget() {
+            let newTarget = words[Math.floor(Math.random() * words.length)];
+            if(newTarget === targetWord && words.length > 1) { pickNewTarget(); return; }
+            targetWord = newTarget;
+            document.getElementById("targetWord").innerText = targetWord;
+            speakWord();
+        }
+
+        function updateUI() {
+            document.getElementById("score").innerText = "Score: " + score;
+            let h = "";
+            for(let i=0; i<lives; i++) h += "❤️";
+            for(let i=lives; i<3; i++) h += "🖤";
+            document.getElementById("heartsDisplay").innerText = h;
+        }
+
+        function loseLife() {
+            lives--; playSound('wrong'); updateUI();
+            if(lives <= 0) {
+                isPlaying = false;
+                document.getElementById("startScreen").classList.add("show");
+                document.getElementById("startScreen").innerHTML = "<h2>Game Over</h2><p>Your Score: "+score+"</p><button onclick='location.reload()'>Restart</button>";
+            }
+        }
+        
+        // Handle Taps / Clicks
+        function handleInteraction(clientX, clientY) {
+            if(!isPlaying) return;
+            let rect = canvas.getBoundingClientRect();
+            let clickX = clientX - rect.left;
+            let clickY = clientY - rect.top;
+            
+            for(let i=balloons.length-1; i>=0; i--) {
+                let b = balloons[i];
+                let dist = Math.hypot(clickX - b.x, clickY - b.y);
+                if(dist <= b.r + 10) { // +10 for generous hitbox
+                    if(b.word === targetWord) {
+                        playSound('pop'); createExplosion(b.x, b.y, b.color);
+                        score += 10; updateUI();
+                        pickNewTarget();
+                    } else {
+                        createExplosion(b.x, b.y, "#ef4444");
+                        loseLife();
+                    }
+                    balloons.splice(i, 1);
+                    return; // Only pop one at a time
+                }
+            }
+        }
+
+        window.addEventListener("mousedown", (e) => { if(!e.target.closest('#ui')) handleInteraction(e.clientX, e.clientY); });
+        window.addEventListener("touchstart", (e) => { 
+            if(!e.target.closest('#ui')) {
+                e.preventDefault();
+                handleInteraction(e.touches[0].clientX, e.touches[0].clientY);
+            }
+        }, {passive: false});
+
+        window.startGame = function() {
+            document.getElementById("startScreen").classList.remove("show");
+            if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if(audioCtx.state === 'suspended') audioCtx.resume();
+            
+            score = 0; lives = 3; balloons = [];
+            isPlaying = true;
+            pickNewTarget();
+            updateUI();
+            requestAnimationFrame(loop);
+        }
+
+        function drawBalloon(ctx, x, y, r, color) {
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            // Balloon body
+            ctx.ellipse(x, y, r, r * 1.2, 0, 0, Math.PI * 2);
+            ctx.fill();
+            // Knot
+            ctx.beginPath();
+            ctx.moveTo(x, y + r * 1.2);
+            ctx.lineTo(x - 10, y + r * 1.2 + 15);
+            ctx.lineTo(x + 10, y + r * 1.2 + 15);
+            ctx.fill();
+            // Highlight
+            ctx.fillStyle = "rgba(255,255,255,0.3)";
+            ctx.beginPath();
+            ctx.ellipse(x - r*0.3, y - r*0.5, r*0.2, r*0.4, Math.PI/6, 0, Math.PI*2);
+            ctx.fill();
+        }
+
+        function loop() {
+            if(!isPlaying) return;
+            
+            // Background
+            if(bgImg.complete) ctx.drawImage(bgImg, 0, 0, canvas.width, canvas.height);
+            else { ctx.fillStyle = "#87CEEB"; ctx.fillRect(0, 0, canvas.width, canvas.height); }
+
+            // Spawn balloons
+            spawnTimer++;
+            if(spawnTimer > 70) { 
+                spawnBalloon();
+                spawnTimer = 0;
+            }
+
+            // Draw and update balloons
+            for(let i=balloons.length-1; i>=0; i--) {
+                let b = balloons[i];
+                b.y -= b.speed;
+                b.wobble += b.wobbleSpeed;
+                let drawX = b.x + Math.sin(b.wobble) * 20; // Wobble effect
+                
+                // Draw string
+                ctx.strokeStyle = "white"; ctx.lineWidth = 2;
+                ctx.beginPath(); ctx.moveTo(drawX, b.y + b.r * 1.2 + 15); ctx.lineTo(drawX + Math.sin(b.wobble)*10, b.y + b.r * 1.2 + 60); ctx.stroke();
+                
+                // Draw Balloon
+                drawBalloon(ctx, drawX, b.y, b.r, b.color);
+                
+                // Draw image inside balloon
+                let img = loadedImages[b.word];
+                if(img && img.complete) {
+                    let imgSize = b.r * 1.2;
+                    ctx.save();
+                    ctx.beginPath(); ctx.arc(drawX, b.y, imgSize/2, 0, Math.PI*2); ctx.clip();
+                    ctx.drawImage(img, drawX - imgSize/2, b.y - imgSize/2, imgSize, imgSize);
+                    ctx.restore();
+                }
+
+                // Missed target (went above screen)
+                if(b.y < -100) {
+                    if(b.word === targetWord) loseLife(); // Punish for missing correct balloon
+                    balloons.splice(i, 1);
+                }
+            }
+
+            // Particles
+            for(let i=particles.length-1; i>=0; i--) {
+                let p = particles[i];
+                p.x += p.vx; p.y += p.vy; p.life--;
+                ctx.fillStyle = p.color;
+                ctx.globalAlpha = p.life / 30;
+                ctx.beginPath(); ctx.arc(p.x, p.y, 6, 0, Math.PI*2); ctx.fill();
+                ctx.globalAlpha = 1.0;
+                if(p.life <= 0) particles.splice(i, 1);
+            }
+
+            requestAnimationFrame(loop);
+        }
+    </script>
+</body>
+</html>
