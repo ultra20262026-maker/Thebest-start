@@ -173,8 +173,11 @@
             playSound('shoot');
             bullets.push({x: player.x + player.w/2 - 3, y: player.y, w: 6, h: 15});
         }
-        window.addEventListener("mousedown", (e) => { if(!e.target.closest('#ui')) fire(); });
-        window.addEventListener("touchstart", (e) => { if(!e.target.closest('#ui')) fire(); }, {passive: false});
+        window.addEventListener("pointerdown", (e) => { 
+            if(!e.target.closest('#ui') && !e.target.closest('#startScreen')) {
+                fire(); 
+            }
+        });
 
         function spawnTargets() {
             targets = [];

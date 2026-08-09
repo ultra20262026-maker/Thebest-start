@@ -207,13 +207,11 @@
             }
         }
 
-        window.addEventListener("mousedown", (e) => { if(!e.target.closest('#ui')) handleInteraction(e.clientX, e.clientY); });
-        window.addEventListener("touchstart", (e) => { 
-            if(!e.target.closest('#ui')) {
-                e.preventDefault();
-                handleInteraction(e.touches[0].clientX, e.touches[0].clientY);
+        window.addEventListener("pointerdown", (e) => { 
+            if(!e.target.closest('#ui') && !e.target.closest('#startScreen')) {
+                handleInteraction(e.clientX, e.clientY);
             }
-        }, {passive: false});
+        });
 
         window.startGame = function() { window.gameStarted = true; resize();
             document.getElementById("startScreen").classList.remove("show");
