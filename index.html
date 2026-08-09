@@ -455,6 +455,11 @@
     </footer>
 
     <script>
+        window.addEventListener('pageshow', function (event) {
+            // Hide the loader if the page is restored from the back-forward cache (bfcache)
+            document.getElementById('loader').style.display = 'none';
+        });
+
         function playGame(url) {
             document.getElementById('loader').style.display = 'flex';
             setTimeout(() => {
