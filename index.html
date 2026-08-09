@@ -430,32 +430,6 @@
                     gamesSection.scrollIntoView({ behavior: 'smooth' });
                 });
             }
-
-            // إظهار نص التحميل عند الضغط على زر اللعب
-            const playBtns = document.querySelectorAll('.play-btn');
-            playBtns.forEach(btn => {
-                btn.addEventListener('click', function(e) {
-                    const targetUrl = this.getAttribute('href');
-                    if (targetUrl && targetUrl !== '#') {
-                        e.preventDefault(); // منع الافتراضي للتأكد من التنقل بشكل صحيح
-                        
-                        const originalText = this.innerText;
-                        this.innerText = 'جاري التحميل... ⏳';
-                        this.style.opacity = '0.7';
-                        this.style.pointerEvents = 'none';
-                        
-                        // الانتقال للرابط بشكل برمجي لضمان عدم حدوث مشاكل في المتصفح
-                        window.location.href = targetUrl;
-                        
-                        // إعادة الزر لشكله الطبيعي بعد 5 ثوانٍ
-                        setTimeout(() => {
-                            this.innerText = originalText;
-                            this.style.pointerEvents = 'auto';
-                            this.style.opacity = '1';
-                        }, 5000);
-                    }
-                });
-            });
         });
     </script>
 </body>
