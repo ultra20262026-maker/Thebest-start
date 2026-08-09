@@ -463,7 +463,7 @@
         function playGame(url) {
             document.getElementById('loader').style.display = 'flex';
             setTimeout(() => {
-                window.location.href = url;
+                window.location.href = url + "?v=" + new Date().getTime();
             }, 100);
         }
 

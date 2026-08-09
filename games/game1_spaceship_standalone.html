@@ -173,9 +173,14 @@
             playSound('shoot');
             bullets.push({x: player.x + player.w/2 - 3, y: player.y, w: 6, h: 15});
         }
+        let lastTapTime = 0;
         window.addEventListener("pointerdown", (e) => { 
             if(!e.target.closest('#ui') && !e.target.closest('#startScreen')) {
-                fire(); 
+                let currentTime = new Date().getTime();
+                if (currentTime - lastTapTime < 400) {
+                    fire(); 
+                }
+                lastTapTime = currentTime;
             }
         });
 
