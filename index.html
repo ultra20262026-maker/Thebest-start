@@ -5,6 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>The Best Start - سلسلة الأفضل</title>
     <meta name="description" content="موقع ألعاب أطفال تعليمية وترفيهية - سلسلة الأفضل.">
+    
+    <!-- تحميل الألعاب في الخلفية مسبقاً لتسريع فتحها -->
+    <link rel="prefetch" href="games/game1_spaceship_standalone.html">
+    <link rel="prefetch" href="games/game2_catch_standalone.html">
+    <link rel="prefetch" href="games/game3_balloons_standalone.html">
+    <link rel="prefetch" href="games/game4_submarine_standalone.html">
+    <link rel="prefetch" href="games/game5_shadow_standalone.html">
+
     <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Baloo+Bhaijaan+2:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
@@ -422,6 +430,26 @@
                     gamesSection.scrollIntoView({ behavior: 'smooth' });
                 });
             }
+
+            // إظهار نص التحميل عند الضغط على زر اللعب
+            const playBtns = document.querySelectorAll('.play-btn');
+            playBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    if (this.getAttribute('href') !== '#') {
+                        const originalText = this.innerText;
+                        this.innerText = 'جاري التحميل... ⏳';
+                        this.style.pointerEvents = 'none'; // منع الضغط مرتين
+                        this.style.opacity = '0.7';
+                        
+                        // إعادة الزر لشكله الطبيعي بعد 5 ثوانٍ في حال رجع المستخدم للصفحة
+                        setTimeout(() => {
+                            this.innerText = originalText;
+                            this.style.pointerEvents = 'auto';
+                            this.style.opacity = '1';
+                        }, 5000);
+                    }
+                });
+            });
         });
     </script>
 </body>
