@@ -215,7 +215,7 @@
             }
         }, {passive: false});
 
-        window.startGame = function() {
+        window.startGame = function() { window.gameStarted = true; resize();
             document.getElementById("startScreen").classList.remove("show");
             if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
             if(audioCtx.state === 'suspended') audioCtx.resume();

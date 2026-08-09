@@ -88,9 +88,7 @@
         function resize() {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
-            player.w = Math.min(100, canvas.width * 0.15);
-            player.h = player.w;
-            player.y = canvas.height - player.h - 20;
+            if (window.gameStarted) { player.w = Math.min(100, canvas.width * 0.15); player.h = player.w; player.y = canvas.height - player.h - 20; }
         }
         window.addEventListener('resize', resize);
         resize();
@@ -230,7 +228,7 @@
             }
         }
 
-        window.startGame = function() {
+        window.startGame = function() { window.gameStarted = true; resize();
             document.getElementById("startScreen").classList.remove("show");
             if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
             if(audioCtx.state === 'suspended') audioCtx.resume();
