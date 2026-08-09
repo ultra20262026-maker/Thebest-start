@@ -286,6 +286,33 @@
             border-top-right-radius: 30px;
         }
 
+        /* Loader */
+        #loader {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255, 255, 255, 0.9);
+            z-index: 9999;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        .spinner {
+            border: 8px solid #f3f3f3;
+            border-top: 8px solid var(--primary-color);
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        #loader p {
+            margin-top: 1rem;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
         @media (max-width: 768px) {
             .main-header {
                 flex-direction: column;
@@ -321,11 +348,14 @@
             }
             .blob { font-size: 5rem; }
             
-            .games-section { padding: 3rem 5%; }
-            .games-section h3 { font-size: 2.2rem; margin-bottom: 2rem; }
+            .games-section { padding: 2rem 5%; }
+            .games-section h3 { font-size: 1.8rem; margin-bottom: 1.5rem; }
             .games-grid { 
                 grid-template-columns: 1fr; 
-                gap: 20px; 
+                gap: 15px; 
+            }
+            .game-card {
+                margin-bottom: 15px;
             }
             
             .game-image { height: 150px; font-size: 4rem; }
@@ -350,6 +380,11 @@
         </nav>
     </header>
 
+    <div id="loader">
+        <div class="spinner"></div>
+        <p>جاري التحميل...</p>
+    </div>
+
     <main>
         <section class="hero">
             <div class="hero-content">
@@ -368,7 +403,7 @@
             <h3>ألعابنا الممتعة 🚀</h3>
             <div class="games-grid">
                 
-                <div class="game-card" onclick="window.location.href='games/game1_spaceship_standalone.html';" style="cursor: pointer;">
+                <div class="game-card" onclick="playGame('games/game1_spaceship_standalone.html')" style="cursor: pointer;">
                     <div class="game-image bg-blue">🚀</div>
                     <div class="game-info">
                         <h4>مركبة الفضاء</h4>
@@ -377,7 +412,7 @@
                     </div>
                 </div>
                 
-                <div class="game-card" onclick="window.location.href='games/game2_catch_standalone.html';" style="cursor: pointer;">
+                <div class="game-card" onclick="playGame('games/game2_catch_standalone.html')" style="cursor: pointer;">
                     <div class="game-image bg-yellow">🍎</div>
                     <div class="game-info">
                         <h4>التقاط الأشياء</h4>
@@ -386,7 +421,7 @@
                     </div>
                 </div>
 
-                <div class="game-card" onclick="window.location.href='games/game3_balloons_standalone.html';" style="cursor: pointer;">
+                <div class="game-card" onclick="playGame('games/game3_balloons_standalone.html')" style="cursor: pointer;">
                     <div class="game-image bg-green">🎈</div>
                     <div class="game-info">
                         <h4>فرقعة البالونات</h4>
@@ -395,7 +430,7 @@
                     </div>
                 </div>
 
-                <div class="game-card" onclick="window.location.href='games/game4_submarine_standalone.html';" style="cursor: pointer;">
+                <div class="game-card" onclick="playGame('games/game4_submarine_standalone.html')" style="cursor: pointer;">
                     <div class="game-image bg-blue">🚢</div>
                     <div class="game-info">
                         <h4>مغامرة الغواصة</h4>
@@ -404,7 +439,7 @@
                     </div>
                 </div>
 
-                <div class="game-card" onclick="window.location.href='games/game5_shadow_standalone.html';" style="cursor: pointer;">
+                <div class="game-card" onclick="playGame('games/game5_shadow_standalone.html')" style="cursor: pointer;">
                     <div class="game-image bg-pink">👥</div>
                     <div class="game-info">
                         <h4>مطابقة الظل</h4>
@@ -418,10 +453,17 @@
     </main>
 
     <footer>
-        <p>&copy; 2026 The Best Start - سلسلة الأفضل. جميع الحقوق محفوظة.</p>
+        <p>جميع الحقوق محفوظة &copy; 2026 سلسلة الأفضل</p>
     </footer>
 
     <script>
+        function playGame(url) {
+            document.getElementById('loader').style.display = 'flex';
+            setTimeout(() => {
+                window.location.href = url;
+            }, 100);
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             const ctaBtn = document.querySelector('.cta-button');
             if(ctaBtn) {
