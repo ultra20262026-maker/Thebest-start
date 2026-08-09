@@ -210,10 +210,6 @@
             font-size: 5rem;
         }
 
-        .bg-pink { background: var(--pink); }
-        .bg-blue { background: var(--blue); }
-        .bg-yellow { background: var(--yellow); }
-        .bg-green { background: var(--green); }
         .bg-gray { background: var(--gray); color: white; }
 
         .game-info {
@@ -236,26 +232,14 @@
             margin-bottom: 1.5rem;
         }
 
-        .play-btn {
-            background: var(--primary-color);
-            color: white;
-            border: none;
-            padding: 10px 30px;
-            font-size: 1.2rem;
-            font-family: inherit;
-            font-weight: bold;
-            border-radius: 25px;
-            cursor: pointer;
-            box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4);
-            transition: all 0.3s;
-            text-decoration: none;
-            display: inline-block;
-            margin-top: auto;
+        .empty-card {
+            opacity: 0.8;
+            border: 4px dashed var(--gray);
+            box-shadow: none;
         }
-
-        .play-btn:hover {
-            background: #ff5252;
-            transform: scale(1.1);
+        .empty-card:hover {
+            transform: none;
+            border-color: var(--primary-color);
         }
 
         /* Footer */
@@ -319,57 +303,11 @@
             <h3>ألعابنا الممتعة 🚀</h3>
             <div class="games-grid">
                 
-                <div class="game-card">
-                    <div class="game-image bg-pink">🅰️</div>
+                <div class="game-card empty-card">
+                    <div class="game-image bg-gray">⏳</div>
                     <div class="game-info">
-                        <h4>مغامرة الصوتيات</h4>
-                        <p>تعلم الحروف والأصوات الإنجليزية الممتعة</p>
-                        <a href="games/Phonics_Adventure_All_In_One.html" class="play-btn">العب الآن</a>
-                    </div>
-                </div>
-                
-                <div class="game-card">
-                    <div class="game-image bg-blue">🚀</div>
-                    <div class="game-info">
-                        <h4>مركبة الفضاء (رياضيات)</h4>
-                        <p>حل المعادلات لتطير في الفضاء</p>
-                        <a href="games/game1_spaceship_standalone.html" class="play-btn">العب الآن</a>
-                    </div>
-                </div>
-                
-                <div class="game-card">
-                    <div class="game-image bg-yellow">🍎</div>
-                    <div class="game-info">
-                        <h4>لعبة التقاط الأشياء</h4>
-                        <p>التقط الأشياء الصحيحة بسرعة</p>
-                        <a href="games/game2_catch_standalone.html" class="play-btn">العب الآن</a>
-                    </div>
-                </div>
-
-                <div class="game-card">
-                    <div class="game-image bg-green">🎈</div>
-                    <div class="game-info">
-                        <h4>فرقعة البالونات (رياضيات)</h4>
-                        <p>فرقع البالون الذي يحمل الإجابة الصحيحة</p>
-                        <a href="games/game3_balloons_standalone.html" class="play-btn">العب الآن</a>
-                    </div>
-                </div>
-
-                <div class="game-card">
-                    <div class="game-image bg-blue">🚢</div>
-                    <div class="game-info">
-                        <h4>مغامرة الغواصة</h4>
-                        <p>اغص في أعماق البحار للتعلم</p>
-                        <a href="games/game4_submarine_standalone.html" class="play-btn">العب الآن</a>
-                    </div>
-                </div>
-
-                <div class="game-card">
-                    <div class="game-image bg-pink">👥</div>
-                    <div class="game-info">
-                        <h4>لعبة مطابقة الظل</h4>
-                        <p>طابق كل شكل مع ظله الصحيح</p>
-                        <a href="games/game5_shadow_standalone.html" class="play-btn">العب الآن</a>
+                        <h4>ألعاب جديدة قريباً</h4>
+                        <p>نعمل على إضافة مجموعة من الألعاب الممتعة، يرجى الانتظار...</p>
                     </div>
                 </div>
 
